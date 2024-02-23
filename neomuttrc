@@ -1,0 +1,206 @@
+#
+# Config
+#
+set real_name           = "Malte Dehling"
+set from                = "mdehling@gmail.com"
+
+set my_config_dir       = "$HOME/.config/neomutt"
+set my_mail_dir         = "$HOME/mail"
+
+set my_sync_cmd         = "gmi sync -C $my_mail_dir"
+set sendmail            = "gmi send -t -C $my_mail_dir"
+
+set folder              = "$my_mail_dir"
+set signature           = "$my_config_dir/signature"
+set mailcap_path        = "$my_config_dir/mailcap"
+
+#
+# Mailboxes
+#
+set nm_default_url      = "notmuch://$my_mail_dir"
+set nm_query_type       = "threads"
+set nm_db_limit         = 2500
+
+set nm_query_window_enable      = yes
+set nm_query_window_duration    = 1
+set nm_query_window_timebase    = "month"
+
+set nm_exclude_tags     = "trash"
+set nm_flagged_tag      = "flagged"
+set nm_replied_tag      = "replied"
+set nm_unread_tag       = "unread"
+
+set nm_record           = no
+
+#
+# Index & Pager
+#
+set auto_tag            = yes
+set delete              = no
+set move                = no
+
+set sort                = threads
+set sort_aux            = reverse-last-date-received
+set collapse_all        = yes
+set hide_thread_subject = no
+
+set markers             = no
+set pager_stop          = yes
+set wait_key            = no
+
+set reverse_alias       = yes
+
+set my_list_regex       = "(\\[[[:print:]]*\\][ \t]*)*"
+set my_reply_regex      = "((re|aw)(\[[0-9]+\])*:[ \t]*)+"
+set my_forward_regex    = "((fw|we)(\[[0-9]+\])*:[ \t]*)+"
+
+subjectrx               "^${my_list_regex}"                     "%R"
+subjectrx               "^${my_reply_regex}${my_list_regex}"    "%R"
+subjectrx               "^${my_forward_regex}${my_list_regex}"  "Fw: %R"
+
+tag-transforms          inbox "I"   trash "T"
+tag-formats             inbox "GI"  trash "GT"
+
+set index_format        = " %4C %<GI?%GI& >%<GT?%GT& >%Z (%{%F %R %z}) %<M?%-20.20L (%-2.2M)&%-25.25L> %s "
+
+#
+# Pager & Editor
+#
+alternative_order       text/plain text/html
+auto_view               text/html
+
+ignore                  *
+unignore                From: To: CC: Date: Subject:
+unhdr_order             *
+hdr_order               From: To: CC: Date: Subject:
+
+#
+# Editor
+#
+set edit_headers        = yes
+set auto_edit           = yes
+set include             = yes
+set followup_to         = yes
+set honor_followup_to   = yes
+set copy                = no
+set postpone            = ask-yes
+
+set abort_noattach      = ask-yes
+set abort_noattach_regex    = "\\<attach(ed|ment)?\\>"
+
+set empty_subject       = "Re: your mail"
+set forward_format      = "Fw: %s"
+set attribution         = "On %d, %n wrote:"
+
+#
+# Crypto
+#
+set crypt_use_gpgme     = yes
+set crypt_auto_sign     = yes
+set crypt_auto_encrypt  = no
+set crypt_reply_encrypt = yes
+set crypt_verify_sig    = yes
+
+set postpone_encrypt    = yes
+set pgp_self_encrypt    = yes
+
+set pgp_default_key     = 0x2BC2E4EAA2B07744
+my_hdr X-GPG-Key-FingerPrint: 122C E3AF 8A4F C4E6 6B1F  F7BC 911B 1D91 6728 DD1B
+
+#
+# Mailboxes
+#
+set virtual_spool_file  = yes
+
+set my_primary          = \
+"(tag:inbox -tag:promotions -tag:social -tag:updates -tag:forums)"
+set my_flagged          = "(tag:inbox and tag:flagged)"
+set my_current          = "(tag:inbox or tag:spam or tag:sent)"
+
+virtual-mailboxes Primary       "notmuch://?query=$my_primary or $my_flagged"
+virtual-mailboxes Promotions    "notmuch://?query=tag:inbox and tag:promotions"
+virtual-mailboxes Social        "notmuch://?query=tag:inbox and tag:social"
+virtual-mailboxes Updates       "notmuch://?query=tag:inbox and tag:updates"
+virtual-mailboxes Forums        "notmuch://?query=tag:inbox and tag:forums"
+virtual-mailboxes Sent          "notmuch://?query=tag:sent"
+virtual-mailboxes Spam          "notmuch://?query=tag:spam"
+virtual-mailboxes Trash         "notmuch://?query=tag:trash"
+virtual-mailboxes Archive       "notmuch://?query=not $my_current"
+
+#
+# Bindings & Macros
+#
+unbind * d
+unbind * D
+unbind * \CD
+unbind * <Esc>d
+
+bind index <            vfolder-window-backward
+bind index >            vfolder-window-forward
+
+bind index,pager @      compose-to-sender
+
+macro index,pager <F4>  "<change-vfolder>Primary<enter>"
+macro index,pager <F5>  "<change-vfolder>Promotions<enter>"
+macro index,pager <F6>  "<change-vfolder>Social<enter>"
+macro index,pager <F7>  "<change-vfolder>Updates<enter>"
+macro index,pager <F8>  "<change-vfolder>Forums<enter>"
+macro index,pager <F9>  "<change-vfolder>Sent<enter>"
+macro index,pager <F10> "<change-vfolder>Spam<enter>"
+macro index,pager <F11> "<change-vfolder>Trash<enter>"
+macro index,pager <F12> "<change-vfolder>Archive<enter>"
+
+macro index,pager a     "<modify-labels-then-hide>!inbox<enter>"
+macro index,pager d     "<modify-labels-then-hide>+trash<enter>"
+macro index,pager u     "<modify-labels-then-hide>-trash<enter>"
+
+macro index,pager G     "<shell-escape>$my_sync_cmd<enter>"
+
+macro index,pager U     "\
+<enter-command>set pipe_decode = no<enter>\
+<pipe-message>urlview<enter>\
+<enter-command>set pipe_decode = yes<enter>"
+
+#
+# Mailing Lists
+#
+lists       netbsd-[:alnum:]*@netbsd.org
+subscribe   netbsd-(announce|bugs)@netbsd.org
+alias       netbsd-announce NetBSD Announce <netbsd-announce@netbsd.org>
+alias       netbsd-bugs     NetBSD Bugs <netbsd-bugs@netbsd.org>
+
+lists       [:alnum:]*-users@netbsd.org
+subscribe   (netbsd|current|pkgsrc)-users@netbsd.org
+alias       netbsd-users    NetBSD Users <netbsd-users@netbsd.org>
+alias       current-users   NetBSD Current <current-users@netbsd.org>
+alias       pkgsrc-users    PkgSrc Users <pkgsrc-users@netbsd.org>
+
+lists       port-[:alnum:]*@netbsd.org
+subscribe   port-(arm|sparc|sun3)@netbsd.org
+alias       port-amd64      NetBSD Port AMD64 <port-amd64@netbsd.org>
+alias       port-arm        NetBSD Port Arm <port-arm@netbsd.org>
+alias       port-m68k       NetBSD Port M68k <port-m68k@netbsd.org>
+alias       port-sparc      NetBSD Port Sparc <port-sparc@netbsd.org>
+alias       port-sparc      NetBSD Port Sparc64 <port-sparc64@netbsd.org>
+alias       port-sun3       NetBSD Port Sun-3 <port-sun3@netbsd.org>
+alias       port-vax        NetBSD Port VAX <port-vax@netbsd.org>
+
+lists       @lists.archlinux.org
+subscribe   arch-announce@lists.archlinux.org
+alias       arch-announce   Arch Announce <arch-announce@lists.archlinux.org>
+alias       arch-general    Arch General <arch-general@lists.archlinux.org>
+alias       arch-ports      Arch Ports <arch-ports@lists.archlinux.org>
+
+lists       @googlegroups.com
+subscribe   mfm-(announce|discuss)@googlegroups.com
+alias       mfm-announce    MFM Announce
+alias       mfm-discuss     MFM Discuss
+
+subscribe   rescue@sunhelp.org
+alias       rescue          The Rescue List <rescue@sunhelp.org>
+
+subscribe   cctalk@classiccmp.org
+alias       cctalk          CCTalk <cctalk@classiccmp.org>
+
+subscribe   hecnet@lists.dfupdate.se
+alias       hecnet          HECnet <hecnet@lists.dfupdate.se>
